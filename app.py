@@ -1,40 +1,28 @@
-from flask import Flask, render_template, request, jsonify
-import sqlite3
-import os
+from flask import Flask, request, jsonify, render_template
+
 app = Flask(__name__)
 
-def db():
-    return sqlite3.connect("database.db")
-
-def init_db():
-    con = db()
-    cur = con.cursor()
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS users (
-        user_id INTEGER PRIMARY KEY,
-        username TEXT,
-        balance REAL DEFAULT 0
-    )
-    """)
-    con.commit()
-    con.close()
-
 @app.route("/")
-def index():
+def home():
     return render_template("index.html")
 
-@app.route("/api/user", methods=["POST"])
-def user():
-    data = request.json
-    user_id = data["id"]
-    username = data.get("username", "غير معروف")
+@app.route("/check", methods=["POST"])
+def check_cards():
+    data = request.get_json()
+    cards = data.get("cards", [])
+    live = approved = declined = 0
+    for c in cards:
+        import random
+        r = random.random()
+        if r < 0.2:
+            live += 1
+            approved += 1
+        else:
+            declined += 1
+    return jsonify({"live": live, "approved": approved, "declined": declined})
 
-    con = db()
-    cur = con.cursor()
-    cur.execute("INSERT OR IGNORE INTO users (user_id, username) VALUES (?,?)",
-                (user_id, username))
-    con.commit()
-
+if __name__ == "__main__":
+    app.run(debug=True)
     cur.execute("SELECT balance FROM users WHERE user_id=?", (user_id,))
     balance = cur.fetchone()[0]
     con.close()
