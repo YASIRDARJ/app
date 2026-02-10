@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, render_template
-
+import os
 app = Flask(__name__)
 
 @app.route("/")
@@ -20,19 +20,6 @@ def check_cards():
         else:
             declined += 1
     return jsonify({"live": live, "approved": approved, "declined": declined})
-
-if __name__ == "__main__":
-    app.run(debug=True)
-    cur.execute("SELECT balance FROM users WHERE user_id=?", (user_id,))
-    balance = cur.fetchone()[0]
-    con.close()
-
-    return jsonify({"balance": balance})
-
-@app.route("/api/action", methods=["POST"])
-def action():
-    action = request.json["action"]
-    return jsonify({"msg": f"✅ تم تنفيذ: {action}"})
 
 if __name__ == "__main__":
     init_db()
