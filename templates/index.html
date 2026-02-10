@@ -1,152 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lynx Checker</title>
-<link rel="stylesheet" href="/static/style.css">
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-</head>
-<body>
-
-<div class="app">
-
-  <div class="header"><h1>Lynx</h1></div>
-
-  <div class="page active" id="checker">
-    <textarea id="cards" placeholder="Paste cards, pick a gate, go..."></textarea>
-
-    <div class="gate">
-      <label>Gate:</label>
-      <select id="gate">
-        <option value="stripe">Stripe Auth</option>
-        <option value="paypal">PayPal</option>
-      </select>
-    </div>
-
-    <div class="threads">
-      <label>Threads:</label>
-      <select id="threads">
-        <option>1</option>
-        <option>3</option>
-        <option>5</option>
-        <option>10</option>
-        <option>15</option>
-      </select>
-    </div>
-
-    <button id="startBtn">Start</button>
-
-    <div class="results">
-      <div class="result-category"><span>Live</span> <span id="liveCount">0</span></div>
-      <div class="result-category"><span>Approved</span> <span id="approvedCount">0</span></div>
-      <div class="result-category"><span>Declined</span> <span id="declinedCount">0</span></div>
-    </div>
-
-  </div>
-
-  <div class="nav">
-    <div class="nav-item active" onclick="showPage('checker', this)">⚡<span>Checker</span></div>
-    <div class="nav-item" onclick="showPage('profile', this)">👤<span>Profile</span></div>
-    <div class="nav-item" onclick="showPage('settings', this)">⚙️<span>Settings</span></div>
-  </div>
-
-</div>
-
 <script>
-const tg = window.Telegram.WebApp;
-tg.expand();
-
-function showPage(id, el){
-  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-  document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-  el.classList.add("active");
-}
-
-const startBtn = document.getElementById("startBtn");
-startBtn.addEventListener("click", async ()=>{
+document.getElementById("startBtn").onclick = async () => {
   const cards = document.getElementById("cards").value.split("\n");
-  const gate = document.getElementById("gate").value;
-  const threads = parseInt(document.getElementById("threads").value);
 
-  const response = await fetch("/check", {
+  const r = await fetch("/check", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ cards, gate, threads })
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({cards})
   });
 
-  const data = await response.json();
-  document.getElementById("liveCount").innerText = data.live;
-  document.getElementById("approvedCount").innerText = data.approved;
-  document.getElementById("declinedCount").innerText = data.declined;
-});
+  const d = await r.json();
+
+  liveCount.innerText = d.live;
+  approvedCount.innerText = d.approved;
+  declinedCount.innerText = d.declined;
+
+  let out = "";
+  if (d.approved_msgs.length) out += "APPROVED:\n" + d.approved_msgs.join("\n") + "\n\n";
+  if (d.declined_msgs.length) out += "DECLINED:\n" + d.declined_msgs.join("\n");
+
+  alert(out);
+};
 </script>
-
-</body>
-</html>      <select id="threads">
-        <option>1</option>
-        <option>3</option>
-        <option>5</option>
-        <option>10</option>
-        <option>15</option>
-      </select>
-    </div>
-
-    <!-- Start Button -->
-    <button id="startBtn">Start</button>
-
-    <!-- Results -->
-    <div class="results">
-      <div class="result-category">
-        <span>Live</span> <span id="liveCount">0</span>
-      </div>
-      <div class="result-category">
-        <span>Approved</span> <span id="approvedCount">0</span>
-      </div>
-      <div class="result-category">
-        <span>Declined</span> <span id="declinedCount">0</span>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- NAVIGATION -->
-  <div class="nav">
-    <div class="nav-item active" onclick="showPage('checker', this)">⚡<span>Checker</span></div>
-    <div class="nav-item" onclick="showPage('profile', this)">👤<span>Profile</span></div>
-    <div class="nav-item" onclick="showPage('settings', this)">⚙️<span>Settings</span></div>
-  </div>
-
-</div>
-
-<script>
-const tg = window.Telegram.WebApp;
-tg.expand();
-
-// Navigation
-function showPage(id, el){
-  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-  document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-  el.classList.add("active");
-}
-
-// Checker Simulation
-const startBtn = document.getElementById("startBtn");
-startBtn.addEventListener("click", ()=>{
-  const cards = document.getElementById("cards").value.split("\n");
-  let live = 0, approved = 0, declined = 0;
-  for(let i=0;i<cards.length;i++){
-    const rand = Math.random();
-    if(rand<0.2) live++, approved++;
-    else declined++;
-  }
-  document.getElementById("liveCount").innerText = live;
-  document.getElementById("approvedCount").innerText = approved;
-  document.getElementById("declinedCount").innerText = declined;
-});
-</script>
-
-</body>
-</html>
