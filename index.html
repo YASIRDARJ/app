@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>لوحة التحكم</title>
+<link rel="stylesheet" href="/static/style.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+
+<h2>🔧 لوحة التحكم</h2>
+
+<div class="box">
+    <p id="user"></p>
+    <p id="balance"></p>
+
+    <button onclick="send('تشغيل')">▶ تشغيل</button>
+    <button onclick="send('إيقاف')">⛔ إيقاف</button>
+    <button onclick="send('إعادة تشغيل')">🔄 إعادة تشغيل</button>
+
+    <p id="result"></p>
+</div>
+
+<script>
+const tg = window.Telegram.WebApp;
+const u = tg.initDataUnsafe.user;
+
+document.getElementById("user").innerText =
+"👤 المستخدم: @" + u.username;
+
+fetch("/api/user", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify(u)
+})
+.then(r=>r.json())
+.then(d=>{
+    document.getElementById("balance").innerText =
+    "💰 الرصيد: " + d.balance;
+});
+
+function send(action){
+    fetch("/api/action", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({action:action})
+    })
+    .then(r=>r.json())
+    .then(d=>{
+        document.getElementById("result").innerText = d.msg;
+    })
+}
+</script>
+
+</body>
+</html>
