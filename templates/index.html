@@ -10,35 +10,59 @@
 
 <div class="header">Checker</div>
 
-<div class="container">
-  <textarea id="cardsInput" placeholder="CARD|MM|YY|CVV"></textarea>
+<div class="container" id="checkerTab">
 
-  <button id="start" class="start">START</button>
-  <button id="stopBtn" class="stop">STOP</button>
+<textarea id="cardsInput" placeholder="CARD|MM|YY|CVV"></textarea>
 
-  <div class="stats">
-    <div class="box green">LIVE<br><span id="live">0</span></div>
-    <div class="box green">APPROVED<br><span id="approved">0</span></div>
-    <div class="box red">DECLINED<br><span id="declined">0</span></div>
-  </div>
+<input type="file" id="fileInput" accept=".txt" hidden>
+<button class="btn gray" onclick="fileInput.click()">📂 Load From File</button>
 
-  <button class="copy" onclick="copyLive()">COPY LIVE</button>
-
-  <div id="results"></div>
+<div class="stats">
+  <div class="box blue">CHECKED<br><span id="checked">0</span></div>
+  <div class="box green">LIVE<br><span id="live">0</span></div>
+  <div class="box gold">APPROVED<br><span id="approved">0</span></div>
+  <div class="box red">DECLINED<br><span id="declined">0</span></div>
 </div>
 
-<div class="popup" id="popup">
-  <div>
-    <h3 class="green">Finished</h3>
-    <p id="popText"></p>
-    <button onclick="popup.style.display='none'">OK</button>
-  </div>
+<div class="box">
+Threads:
+<select id="threads">
+  <option>1</option><option>2</option><option>3</option>
+  <option>4</option><option>5</option><option>6</option>
+  <option>7</option><option>8</option><option>9</option><option>10</option>
+</select>
 </div>
+
+<button id="start" class="btn green">START</button>
+<button id="stopBtn" class="btn red" style="display:none">STOP</button>
+
+<div class="result approved"><b>LIVE / APPROVED</b><div id="liveBox"></div></div>
+<div class="result declined"><b>DECLINED</b><div id="deadBox"></div></div>
+
+</div>
+
+<!-- PROFILE -->
+<div class="container hidden" id="profileTab">
+  <h3>👤 Profile</h3>
+  <p>Checked: <b id="p_checked">0</b></p>
+  <p>Live: <b id="p_live">0</b></p>
+  <p>Approved: <b id="p_approved">0</b></p>
+  <p>Declined: <b id="p_declined">0</b></p>
+</div>
+
+<!-- LEADERBOARD -->
+<div class="container hidden" id="leaderTab">
+  <h3>🏆 Leaderboard</h3>
+  <div id="leaderList"></div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
 
 <div class="tabs">
-  <div class="tab active">⚡ Checker</div>
-  <div class="tab">👤 Profile</div>
-  <div class="tab">⚙️ Settings</div>
+  <div class="tab active" onclick="openTab('checker')">⚡ Checker</div>
+  <div class="tab" onclick="openTab('leader')">🏆 Leaderboard</div>
+  <div class="tab" onclick="openTab('profile')">👤 Profile</div>
 </div>
 
 <script src="/static/app.js"></script>
