@@ -1,56 +1,53 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Checker Demo</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
 <style>
-body{background:#000;color:#fff;font-family:Arial;padding:15px}
-textarea{width:100%;height:120px;background:#111;color:#fff;border:none;border-radius:8px;padding:10px}
-button{width:100%;padding:12px;border:none;border-radius:8px;font-size:16px;margin-top:10px;cursor:pointer}
-#startBtn{background:#22c55e;color:#000}
-#stopBtn{background:#ef4444;color:#fff;display:none}
-select{width:100%;padding:8px;background:#111;color:#fff;border:none;border-radius:6px;margin-top:10px}
-.counter{display:flex;gap:8px;margin-top:10px}
-.counter div{flex:1;background:#111;padding:10px;border-radius:8px;text-align:center}
+body{margin:0;background:#0b0b0b;color:#eee;font-family:Arial}
+header{padding:15px;text-align:center;font-size:20px;font-weight:bold}
+textarea{width:100%;height:140px;background:#111;color:#fff;border:none;border-radius:10px;padding:10px}
+button{width:100%;padding:12px;border:none;border-radius:10px;font-size:16px;margin-top:10px}
+#start{background:#22c55e;color:#000}
+#stop{background:#ef4444;color:#fff;display:none}
+.counters{display:flex;gap:8px;margin-top:10px}
+.box{flex:1;background:#111;padding:10px;border-radius:10px;text-align:center}
 .green{color:#22c55e}
 .red{color:#ef4444}
-.result{background:#111;border-radius:8px;padding:10px;margin-top:8px}
+.result{background:#111;margin-top:8px;padding:10px;border-radius:10px;font-size:14px}
 .approved{border-left:4px solid #22c55e}
 .declined{border-left:4px solid #ef4444}
+.copy{background:#1f2937;color:#fff}
 .popup{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center}
-.popup div{background:#111;border:2px solid #22c55e;padding:20px;border-radius:12px}
+.popup div{background:#111;padding:20px;border-radius:14px;border:2px solid #22c55e}
 </style>
 </head>
+
 <body>
+<header>Checker</header>
 
-<textarea id="cards" placeholder="CARD|MM|YY|CVV"></textarea>
+<textarea id="cards" placeholder="CARD|MM|YY|CVV (one per line)"></textarea>
 
-<select id="threads">
-  <option value="1">Threads: 1</option>
-  <option value="3">Threads: 3</option>
-  <option value="5">Threads: 5</option>
-  <option value="10">Threads: 10</option>
-</select>
+<button id="start">START</button>
+<button id="stop">STOP</button>
 
-<button id="startBtn">START</button>
-<button id="stopBtn">STOP</button>
-
-<div class="counter">
-  <div class="green">LIVE<br><span id="live">0</span></div>
-  <div class="green">APPROVED<br><span id="approved">0</span></div>
-  <div class="red">DECLINED<br><span id="declined">0</span></div>
+<div class="counters">
+  <div class="box green">LIVE<br><span id="live">0</span></div>
+  <div class="box green">APPROVED<br><span id="approved">0</span></div>
+  <div class="box red">DECLINED<br><span id="declined">0</span></div>
 </div>
 
-<button onclick="copyLive()">COPY LIVE</button>
+<button class="copy" onclick="copyLive()">COPY LIVE</button>
 
 <div id="results"></div>
 
 <div class="popup" id="popup">
   <div>
     <h3 class="green">Finished</h3>
-    <p id="popupText"></p>
+    <p id="popText"></p>
     <button onclick="popup.style.display='none'">OK</button>
   </div>
 </div>
@@ -61,22 +58,21 @@ Telegram.WebApp.expand();
 let stop = false;
 let liveCards = [];
 
-startBtn.onclick = async () => {
-  stop = false;
-  results.innerHTML = "";
-  liveCards = [];
-  live.innerText = approved.innerText = declined.innerText = 0;
+start.onclick = async ()=>{
+  stop=false;
+  results.innerHTML="";
+  liveCards=[];
+  live.innerText=approved.innerText=declined.innerText=0;
 
-  startBtn.style.display="none";
+  start.style.display="none";
   stopBtn.style.display="block";
 
   const cardsArr = cards.value.trim().split("\n");
-  const threadsVal = threads.value;
 
   const r = await fetch("/check",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({cards:cardsArr, threads:threadsVal})
+    body:JSON.stringify({cards:cardsArr})
   });
 
   const d = await r.json();
@@ -84,32 +80,28 @@ startBtn.onclick = async () => {
   d.results.forEach(x=>{
     if(stop) return;
 
-    const div = document.createElement("div");
-    div.className = "result " + (x.success ? "approved":"declined");
-    div.innerHTML = `
-      <b>${x.card}</b><br>
-      ${x.response}<br>
-      <small>${x.time} ms</small>
-    `;
+    const div=document.createElement("div");
+    div.className="result "+(x.success?"approved":"declined");
+    div.innerHTML=`<b>${x.card}</b><br>${x.response}<br><small>${x.time} ms</small>`;
     results.prepend(div);
 
     if(x.success){
       live.innerText++;
       approved.innerText++;
       liveCards.push(x.card);
-    } else {
+    }else{
       declined.innerText++;
     }
   });
 
-  startBtn.style.display="block";
+  start.style.display="block";
   stopBtn.style.display="none";
 
-  popupText.innerText = "Live cards: " + live.innerText;
+  popText.innerText="Live cards: "+live.innerText;
   popup.style.display="flex";
 };
 
-stopBtn.onclick = ()=> stop = true;
+stop.onclick=()=>stop=true;
 
 function copyLive(){
   navigator.clipboard.writeText(liveCards.join("\n"));
