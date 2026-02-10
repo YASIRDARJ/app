@@ -4,45 +4,28 @@
 <meta charset="UTF-8">
 <title>Checker</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-<style>
-body{margin:0;background:#0b0b0b;color:#eee;font-family:Arial}
-header{padding:15px;text-align:center;font-size:20px;font-weight:bold}
-textarea{width:100%;height:140px;background:#111;color:#fff;border:none;border-radius:10px;padding:10px}
-button{width:100%;padding:12px;border:none;border-radius:10px;font-size:16px;margin-top:10px}
-#start{background:#22c55e;color:#000}
-#stop{background:#ef4444;color:#fff;display:none}
-.counters{display:flex;gap:8px;margin-top:10px}
-.box{flex:1;background:#111;padding:10px;border-radius:10px;text-align:center}
-.green{color:#22c55e}
-.red{color:#ef4444}
-.result{background:#111;margin-top:8px;padding:10px;border-radius:10px;font-size:14px}
-.approved{border-left:4px solid #22c55e}
-.declined{border-left:4px solid #ef4444}
-.copy{background:#1f2937;color:#fff}
-.popup{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center}
-.popup div{background:#111;padding:20px;border-radius:14px;border:2px solid #22c55e}
-</style>
+<link rel="stylesheet" href="/static/style.css">
 </head>
-
 <body>
-<header>Checker</header>
 
-<textarea id="cards" placeholder="CARD|MM|YY|CVV (one per line)"></textarea>
+<div class="header">Checker</div>
 
-<button id="start">START</button>
-<button id="stop">STOP</button>
+<div class="container">
+  <textarea id="cardsInput" placeholder="CARD|MM|YY|CVV"></textarea>
 
-<div class="counters">
-  <div class="box green">LIVE<br><span id="live">0</span></div>
-  <div class="box green">APPROVED<br><span id="approved">0</span></div>
-  <div class="box red">DECLINED<br><span id="declined">0</span></div>
+  <button id="start" class="start">START</button>
+  <button id="stopBtn" class="stop">STOP</button>
+
+  <div class="stats">
+    <div class="box green">LIVE<br><span id="live">0</span></div>
+    <div class="box green">APPROVED<br><span id="approved">0</span></div>
+    <div class="box red">DECLINED<br><span id="declined">0</span></div>
+  </div>
+
+  <button class="copy" onclick="copyLive()">COPY LIVE</button>
+
+  <div id="results"></div>
 </div>
-
-<button class="copy" onclick="copyLive()">COPY LIVE</button>
-
-<div id="results"></div>
 
 <div class="popup" id="popup">
   <div>
@@ -52,62 +35,12 @@ button{width:100%;padding:12px;border:none;border-radius:10px;font-size:16px;mar
   </div>
 </div>
 
-<script>
-Telegram.WebApp.expand();
+<div class="tabs">
+  <div class="tab active">⚡ Checker</div>
+  <div class="tab">👤 Profile</div>
+  <div class="tab">⚙️ Settings</div>
+</div>
 
-let stop = false;
-let liveCards = [];
-
-start.onclick = async ()=>{
-  stop=false;
-  results.innerHTML="";
-  liveCards=[];
-  live.innerText=approved.innerText=declined.innerText=0;
-
-  start.style.display="none";
-  stopBtn.style.display="block";
-
-  const cardsArr = cards.value.trim().split("\n");
-
-  const r = await fetch("/check",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({cards:cardsArr})
-  });
-
-  const d = await r.json();
-
-  d.results.forEach(x=>{
-    if(stop) return;
-
-    const div=document.createElement("div");
-    div.className="result "+(x.success?"approved":"declined");
-    div.innerHTML=`<b>${x.card}</b><br>${x.response}<br><small>${x.time} ms</small>`;
-    results.prepend(div);
-
-    if(x.success){
-      live.innerText++;
-      approved.innerText++;
-      liveCards.push(x.card);
-    }else{
-      declined.innerText++;
-    }
-  });
-
-  start.style.display="block";
-  stopBtn.style.display="none";
-
-  popText.innerText="Live cards: "+live.innerText;
-  popup.style.display="flex";
-};
-
-stop.onclick=()=>stop=true;
-
-function copyLive(){
-  navigator.clipboard.writeText(liveCards.join("\n"));
-  alert("Copied");
-}
-</script>
-
+<script src="/static/app.js"></script>
 </body>
 </html>
